@@ -13,7 +13,7 @@ let curentPage = 1;
 let searchText = '';
 const perPage = 40;
 let firstLoad = true;
-
+let lightbox = new SimpleLightbox('.gallery a');
 
 Notiflix.Notify.init({
   position: 'center-center', // 'right-top' - 'right-bottom' - 'left-top' - 'left-bottom' - 'center-top' - 'center-bottom' - 'center-center'
@@ -73,11 +73,8 @@ async function addImagesToPage(searchText) {
     
     curentPage++;
     addGallery(elemetsArray);
-    if (!firstLoad) {
+     lightbox.refresh();
       liteScrol();
-    } else {
-      firstLoad = false;
-  }
   } 
   catch (error) {
   
@@ -121,8 +118,7 @@ function addGallery(elemetsArray) {
   }).join('\n');
   
   galleryEl.insertAdjacentHTML('beforeend', cartImage)
-  let lightbox = new SimpleLightbox('.gallery a');
-  lightbox.refresh();
+ 
 }
 function resetData () {
   buttonLoadEl.classList.add('hidden');
@@ -139,11 +135,15 @@ function resetData () {
     }
 };
 function liteScrol() {
-   const { height: cardHeight } = galleryEl
+  if (!firstLoad) {
+     const { height: cardHeight } = galleryEl
   .firstElementChild.getBoundingClientRect();
 
 window.scrollBy({
   top: cardHeight * 2,
   behavior: "smooth",
 });
-}
+  } else {
+    firstLoad = false
+  }
+};
