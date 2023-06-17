@@ -1,6 +1,7 @@
 import Notiflix from 'notiflix';
 import axios from 'axios';
-import SimpleLightbox from "simplelightbox/dist/simple-lightbox.esm";
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 const galleryEl = document.querySelector('.gallery');
 const formEl = document.querySelector('.search-form');
@@ -11,6 +12,7 @@ const URL = 'https://pixabay.com/api/';
 let curentPage = 1;
 let searchText = '';
 const perPage = 40;
+
 
 Notiflix.Notify.init({
   position: 'center-center', // 'right-top' - 'right-bottom' - 'left-top' - 'left-bottom' - 'center-top' - 'center-bottom' - 'center-center'
@@ -24,6 +26,7 @@ function addElementList(event) {
   event.preventDefault();
   const searchText = inputEl.value;
   addImagesToPage(searchText); 
+  refresh();
 };
 buttonLoadEl.addEventListener('click',  () => {
   searchText = inputEl.value;
@@ -46,15 +49,12 @@ async function searchImage (searchText, curentPage) {
     const dataRespons = await response.data;
     const totalHits = dataRespons.totalHits;
     const lengthHits = dataRespons.hits.length;
+    if (totalHits>perPage) {
+      colectionValidator(curentPage, perPage, totalHits);
+    };  
     if (lengthHits === 0 || searchText.trim() === '') {
-      buttonLoadEl.classList.add('hidden')
       return Notiflix.Notify.failure(`Sorry, there are no images matching your search query. Please try again.`) 
-    }
-      else {
-        buttonLoadEl.classList.remove('hidden');
-      }
-    
-    colectionValidator(curentPage, perPage, totalHits);
+    };
     return dataRespons;
   } catch (error) {
   Notiflix.Notify.failure(`Sorry, there are no images matching your search query. Please try again.`) 
@@ -62,19 +62,32 @@ async function searchImage (searchText, curentPage) {
 };
 async function addImagesToPage(searchText) {
   try { 
+ 
     let elemets = await searchImage(searchText, curentPage);
     let elemetsArray = elemets.hits;
+    let totalHits = elemets.totalHits;
+     if (curentPage === 1) {
+        Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
+    };
     curentPage++;
-    let cartImage = elemetsArray.map(({
-      webformatURL, tags, likes, views, comments, downloads }) => {
+    addGallery(elemetsArray);
+  } 
+  catch (error) {
+  };
+  
+};
+function addGallery(elemetsArray) {
+  let cartImage = elemetsArray.map(({
+      webformatURL, tags, likes, views, comments, downloads,largeImageURL }) => {
       return `<ul class="list gallery-list">
         <li class="item">
           <div class="photo-card">
+          <a href="${largeImageURL}">
             <img
               src="${webformatURL}"
               alt="${tags}"
               loading="lazy"
-            />
+            /></a>
             <div class="info">
               <p class="info-item">
                 <b>Likes</b>
@@ -98,16 +111,8 @@ async function addImagesToPage(searchText) {
         </li>
       </ul>`
     }).join('\n');
-    
     return  galleryEl.insertAdjacentHTML('beforeend', cartImage)
-  } 
-  catch (error) {
-    error
-  }
-  
-};
-
-
+}
 function resetData () {
   buttonLoadEl.classList.add('hidden');
   galleryEl.innerHTML = '';
@@ -115,13 +120,11 @@ function resetData () {
 };
 
  function colectionValidator(curentPage, perPage, totalHits) {
-      if ((curentPage * perPage) >= totalHits) {
+      if (curentPage * perPage >= totalHits) {
       buttonLoadEl.classList.add('hidden');
       Notiflix.Notify.success('We\'re sorry, but you\'ve reached the end of search results.');
-    }   
+      } else {
+        buttonLoadEl.classList.remove('hidden');
+    }
 };
-const lightbox = new SimpleLightbox('.gallery a',
-   ( {
-       captionsData: 'alt',
-       captionDelay: 250,
-    }));
+let lightbox = new SimpleLightbox('.gallery a');
