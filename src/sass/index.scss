@@ -83,6 +83,7 @@ img {
 }
 
 .info {
+   
     text-align: center;
     display: flex;
     padding: 10px;
@@ -98,6 +99,7 @@ img {
 .load-more {
     position: relative;
         left: 50%;
+        bottom: 10px;
         transform: translateX(-50%);
     text-align: center;
     display:inline;
@@ -108,6 +110,7 @@ img {
     border-radius: 4px;
     font-size: 16px;
     cursor: pointer;
+    margin-top: 25px;
 }
 
 .load-more:hover {
@@ -124,5 +127,10 @@ img {
 .gallery{
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 15px;
+    padding: 15px;
+    
+}
+a{
+    cursor: zoom-in;
 }

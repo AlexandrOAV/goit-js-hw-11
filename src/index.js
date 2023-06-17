@@ -12,6 +12,7 @@ const URL = 'https://pixabay.com/api/';
 let curentPage = 1;
 let searchText = '';
 const perPage = 40;
+let firstLoad = true;
 
 
 Notiflix.Notify.init({
@@ -26,11 +27,12 @@ function addElementList(event) {
   event.preventDefault();
   const searchText = inputEl.value;
   addImagesToPage(searchText); 
-  refresh();
+
 };
 buttonLoadEl.addEventListener('click',  () => {
   searchText = inputEl.value;
   addImagesToPage(searchText);
+
 });
 
 async function searchImage (searchText, curentPage) {
@@ -53,26 +55,32 @@ async function searchImage (searchText, curentPage) {
       colectionValidator(curentPage, perPage, totalHits);
     };  
     if (lengthHits === 0 || searchText.trim() === '') {
-      return Notiflix.Notify.failure(`Sorry, there are no images matching your search query. Please try again.`) 
+      throw new Error(`Sorry, there are no images matching your search query. Please try again.`)
     };
     return dataRespons;
   } catch (error) {
-  Notiflix.Notify.failure(`Sorry, there are no images matching your search query. Please try again.`) 
+    Notiflix.Notify.failure(error.message); 
   }
 };
 async function addImagesToPage(searchText) {
-  try { 
- 
+  try {  
     let elemets = await searchImage(searchText, curentPage);
     let elemetsArray = elemets.hits;
     let totalHits = elemets.totalHits;
      if (curentPage === 1) {
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
     };
+    
     curentPage++;
     addGallery(elemetsArray);
+    if (!firstLoad) {
+      liteScrol();
+    } else {
+      firstLoad = false;
+  }
   } 
   catch (error) {
+  
   };
   
 };
@@ -110,8 +118,11 @@ function addGallery(elemetsArray) {
           </div>
         </li>
       </ul>`
-    }).join('\n');
-    return  galleryEl.insertAdjacentHTML('beforeend', cartImage)
+  }).join('\n');
+  
+  galleryEl.insertAdjacentHTML('beforeend', cartImage)
+  let lightbox = new SimpleLightbox('.gallery a');
+  lightbox.refresh();
 }
 function resetData () {
   buttonLoadEl.classList.add('hidden');
@@ -127,4 +138,12 @@ function resetData () {
         buttonLoadEl.classList.remove('hidden');
     }
 };
-let lightbox = new SimpleLightbox('.gallery a');
+function liteScrol() {
+   const { height: cardHeight } = galleryEl
+  .firstElementChild.getBoundingClientRect();
+
+window.scrollBy({
+  top: cardHeight * 2,
+  behavior: "smooth",
+});
+}
